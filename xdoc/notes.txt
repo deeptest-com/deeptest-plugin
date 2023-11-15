@@ -1,0 +1,19 @@
+UI Action Record
+    [DeepTet Website] -> send RecordStart event
+        [Plugin Contents] -> get RecordStart event -> forward event to [Plugin Background]
+    OR [Plugin Options] -> send RecordStart event
+
+    [Plugin Background] -> get ActionRecordStart event -> open test site -> wait site loaded -> send ActionRecordEventAttach event
+    [Plugin Contents] -> get ActionRecordEventAttach event
+                      -> init recorder
+                         listen element click event
+        -> get element click event -> send ActionRecordedMsg event
+    [Plugin Background] -> get ActionRecordedMsg event -> forward event to DeepTest ScriptEdit page
+
+HTTP Action Record
+    [DeepTet Website] -> send RecordStart event
+            [Plugin Contents] -> get RecordStart event -> forward event to [Plugin Background]
+        OR [Plugin Options] -> send RecordStart event
+
+    [Plugin Background] -> get ActionRecordStart event -> open test site -> wait site loaded
+           -> listen http request event -> forward event to DeepTest ScriptEdit page
