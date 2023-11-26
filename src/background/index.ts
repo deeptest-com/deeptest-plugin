@@ -167,7 +167,7 @@ function addTabsChangeEvent(mainWindowId: number, recorderWindowId: number) {
 
         console.log('======== recorder tab completed', tabId)
 
-        sendRecordEventAttachMsg(mainWindowId, tabId)
+        // sendRecordEventAttachMsg(mainWindowId, tabId)
         tabIdsInRecorderWindow.push(tabId)
       }
   )
@@ -178,9 +178,10 @@ function addRequestEvent(recorderTabId: number) {
 
   // request recording event
   chrome.webRequest.onBeforeRequest.addListener(function(details){
-      console.log('=== background onBeforeRequest', details)
+      console.log('=== background onBeforeRequest', details.type)
 
-      if (details.url.indexOf('http://') < 0 && details.url.indexOf('https://') < 0) {
+      if ((details.url.indexOf('http://') < 0 && details.url.indexOf('https://') < 0) ||
+           (details.type !== 'main_frame' && details.type !== 'sub_frame' && details.type !== 'xmlhttprequest')) {
         return
       }
 

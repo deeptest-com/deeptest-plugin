@@ -13,10 +13,10 @@ export function addBrowserListener() {
     }
 
     if (message.content.act === ActionRecordedMsg) { // DeepTest script edit page receive recorded data
-      if (!canvas) {
-        canvas = document.createElement("canvas")
-        document.body.appendChild(canvas)
-      }
+      // if (!canvas) {
+      //   canvas = document.createElement("canvas")
+      //   document.body.appendChild(canvas)
+      // }
 
       fireEvent(ChromeExtEventName, ChromeExtEventNodeId, message.content.data)
     }
@@ -24,12 +24,13 @@ export function addBrowserListener() {
 }
 
 export function fireEvent(eventName: string, eventNode: string, data: object): void {
-    const eventFromChrome = document.createEvent('Event')
-    eventFromChrome.initEvent(eventName, true, true)
+    const eventFromChrome = new CustomEvent(eventName, {
+        detail: data
+    });
 
     const node = document.getElementById(eventNode)
     if (node) {
-        node.innerHTML += JSON.stringify(data) + '<br /><br />'
+        // node.innerHTML += JSON.stringify(data) + '<br /><br />'
         node.dispatchEvent(eventFromChrome)
     }
 }
