@@ -2,7 +2,7 @@ import browser from 'webextension-polyfill'
 import type {DeepTestMsg} from '../../utils/types'
 import {ActionRecordedMsg, ChromeExtEventName, ChromeExtEventNodeId, ScopeDeeptest} from "../../utils/const"
 
-let canvas: HTMLCanvasElement
+// let canvas: HTMLCanvasElement
 
 export function addBrowserListener() {
   browser.runtime.onMessage.addListener(function contentWindowIdListener(message: DeepTestMsg) {
