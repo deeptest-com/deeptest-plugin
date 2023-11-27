@@ -273,7 +273,8 @@ function debuggerAttach(recorderTabId: number) {
                     act: ActionRecordedMsg,
                     data: {
                         requestId: requestId,
-                        request: params,
+                        type: 'request',
+                        info: params,
                     }
                 }
             }
@@ -291,29 +292,32 @@ function debuggerAttach(recorderTabId: number) {
             }
 
             chrome.debugger.sendCommand(
-            {
-                tabId: debuggeeId.tabId
-            },
-            'Network.getResponseBody',
-            {
-                "requestId": requestId
-            },
-            async function (response) {
-                console.log('response ->', url, response)
+                {
+                    tabId: debuggeeId.tabId
+                },
+                'Network.getResponseBody',
+                {
+                    "requestId": requestId
+                },
+                async function (response) {
+                    console.log('response ->', url, response)
 
-                const msg = {
-                    scope: ScopeDeeptest,
-                    content: {
-                        act: ActionRecordedMsg,
-                        data: {
-                            requestId: requestId,
-                            response,
+                    const msg = {
+                        scope: ScopeDeeptest,
+                        content: {
+                            act: ActionRecordedMsg,
+                            data: {
+                                requestId: requestId,
+                                type: 'response',
+                                body: response.body,
+                                info: params,
+                            }
                         }
                     }
-                }
 
-                sendRecordMessage(msg)
-            })
+                    sendRecordMessage(msg)
+                }
+            )
         }
     }
 
