@@ -74,7 +74,7 @@ function openRecordWindow(url, tab) {
 
     chrome.windows.create({
         url: url,
-        type: 'popup',
+        type: 'normal',
         width: 1024,
         height: 800
 
