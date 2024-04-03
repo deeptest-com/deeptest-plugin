@@ -1,10 +1,12 @@
 import {DeepTestMsg} from "@/utils/types";
 import {ActionRecordedMsg, ActionRecordStart, ScopeDeeptest} from "@/utils/const";
+import {Tabs} from "webextension-polyfill/namespaces/tabs";
 // import browser from "webextension-polyfill";
 
 const master = new Map<number, number>()
 let gMainWindowId = 0
 let recorderWindowId = 0
+let recordTab: chrome.tabs.Tab = null
 const tabIdsInRecorderWindow = [0]
 
 chrome.runtime.onInstalled.addListener(async (opt) => {
@@ -23,19 +25,18 @@ chrome.runtime.onMessage.addListener(async (msg: DeepTestMsg, sender: chrome.run
     const src = sender.tab ? `tab ${sendUrl}` : 'plugin popup'
     console.log(`--- deeptest background: get forward msg from ${src}`, msg)
 
-    let tab = sender.tab
-    if (!tab) { // from extension
-        const tabs = await chrome.tabs.query({})
+    recordTab = sender.tab as chrome.tabs.Tab
+    // if (!srcTab) { // from extension
+    //     const tabs = await chrome.tabs.query({})
+    //
+    //     tabs.forEach((item: chrome.tabs.Tab) => {
+    //         if (item.title && item.title.indexOf('http://localhost:8000') > -1) {
+    //             srcTab = item
+    //         }
+    //     })
+    // }
 
-        tabs.forEach((item: object) => {
-            console.log(item)
-            if (item.url?.indexOf('http://localhost:8000') > -1) {
-                tab = item
-            }
-        })
-    }
-
-    if (!tab) {
+    if (!recordTab) {
         console.log(`--- deeptest background: tab is null`)
         return
     }
@@ -43,15 +44,15 @@ chrome.runtime.onMessage.addListener(async (msg: DeepTestMsg, sender: chrome.run
     const act = msg.content?.act
 
     if (act === ActionRecordStart) {
-        openRecordWindow(msg.content?.url, tab)
+        openRecordWindow(msg.content?.url, recordTab)
         sendResponse({message: "I am deeptest background: got your msg"})
     }
 })
 
-function openRecordWindow(url, tab) {
+function openRecordWindow(url, dpTab) {
     console.log(`openRecordWindow`)
 
-    const mainWindowId = tab.windowId
+    const mainWindowId = dpTab.windowId
     gMainWindowId = mainWindowId
 
     console.log(`background script: mainWindowId = ${mainWindowId}`)
@@ -64,7 +65,7 @@ function openRecordWindow(url, tab) {
             console.log(`background script: recorder window focused error`, e)
 
             master.set(recorderWindowVal, 0)
-            openRecordWindow(url, tab)
+            openRecordWindow(url, dpTab)
         })
 
         console.log(`background script: main window focused success`)
@@ -326,24 +327,27 @@ function debuggerAttach(recorderTabId: number) {
 }
 
 function sendRecordMessage(msg: any) {
-    chrome.tabs.query({
-        windowId: gMainWindowId,
-        url: ['http://localhost:8000/*', 'https://deeptest.com/*'],
-        active: true,
-        status: "complete"
-    }).then(function (tabs) {
-        console.log(`background script: tabs found`, tabs)
+    const scriptDesignTabId = recordTab.id ? +recordTab.id : 0
+    void chrome.tabs.sendMessage(scriptDesignTabId, msg)
 
-        if (tabs.length > 0) {
-            const tab = tabs[0]
-            if (tab) {
-                const scriptDesignTabId = tab.id ? +tab.id : 0
-                void chrome.tabs.sendMessage(scriptDesignTabId, msg)
-            }
-        }
-    }).catch((err) => {
-        console.log(`background script: tabs NOT found`, err)
-    })
+    // chrome.tabs.query({
+    //     windowId: gMainWindowId,
+    //     url: ['http://localhost:8000/*'],
+    //     active: true,
+    //     status: "complete"
+    // }).then(function (tabs) {
+    //     console.log(`background script: tabs found`, tabs)
+    //
+    //     if (tabs.length > 0) {
+    //         const tab = tabs[0]
+    //         if (tab) {
+    //             const scriptDesignTabId = tab.id ? +tab.id : 0
+    //             void chrome.tabs.sendMessage(scriptDesignTabId, msg)
+    //         }
+    //     }
+    // }).catch((err) => {
+    //     console.log(`background script: tabs NOT found`, err)
+    // })
 }
 
 function isHttpUrl(url) {
