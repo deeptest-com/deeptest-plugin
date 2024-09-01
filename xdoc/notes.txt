@@ -1,3 +1,8 @@
+nvm use v18.18.0
+pnpm install
+npm run dev
+npm run build
+
 UI Action Record
     [DeepTet Website] -> send RecordStart event
         [Plugin Contents] -> get RecordStart event -> forward event to [Plugin Background]
